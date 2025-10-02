@@ -29,6 +29,7 @@ class Task(models.Model):
     )
     parent_task = models.ForeignKey(
         'self',
+        related_name="subtasks",
         on_delete=models.CASCADE,
         null=True,
         blank=True

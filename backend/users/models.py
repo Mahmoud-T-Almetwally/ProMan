@@ -5,6 +5,8 @@ import uuid
 
 
 class User(AbstractUser):
+    first_name = models.CharField(max_length=20, null=False, blank=False)
+    last_name = models.CharField(max_length=20, null=False, blank=False)
     username = models.CharField(max_length=20, null=False, blank=False, unique=True)
     email = models.EmailField(null=False, blank=False, unique=True)
     profile_image = models.ForeignKey(
