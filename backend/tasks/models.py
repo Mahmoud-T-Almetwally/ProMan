@@ -36,6 +36,7 @@ class Task(models.Model):
     )
     dependencies = models.ManyToManyField(
         'self',
+        related_name="dependant_tasks",
         symmetrical=False,
         blank=True
     )

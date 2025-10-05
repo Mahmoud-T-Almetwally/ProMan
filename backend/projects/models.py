@@ -32,7 +32,8 @@ class Project(models.Model):
         blank=True
     )
     create_date = models.DateTimeField(auto_now_add=True, null=False, blank=False)
-    finish_date = models.DateTimeField(null=False, blank=False)
+    finish_date = models.DateTimeField(null=True, blank=True)
+    start_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -42,6 +43,11 @@ class Phase(models.Model):
     project = models.ForeignKey(Project, related_name="phases", on_delete=models.CASCADE)
     title = models.CharField(max_length=30, null=False, blank=False)
     description = models.CharField(max_length=150, blank=True)
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="member_phases",
+        blank=True
+    )
     STATUS_CHOICES = [
         ("Pending", "Pending"),
         ("InProgress", "In Progress"),
