@@ -1,0 +1,351 @@
+{
+  "api_specification_version": "1.0",
+  "application_name": "ProMan Project Management API",
+  "base_path": "/api",
+  "apps": {
+    "users": [
+      {
+        "endpoint_name": "Register User",
+        "functionality": "Creates a new user account. This is a public endpoint.",
+        "route": "/users/register/",
+        "method": "POST",
+        "permissions": "Any",
+        "input": {
+          "description": "User's registration details. `password` and `password2` must match.",
+          "example": {
+            "username": "newuser",
+            "email": "newuser@example.com",
+            "first_name": "New",
+            "last_name": "User",
+            "password": "a-strong-password",
+            "password2": "a-strong-password"
+          }
+        },
+        "output": {
+          "success_code": "201 Created",
+          "description": "Returns the newly created user's public information.",
+          "example": {
+            "username": "newuser",
+            "email": "newuser@example.com",
+            "first_name": "New",
+            "last_name": "User"
+          }
+        }
+      },
+      {
+        "endpoint_name": "Login (Get JWT)",
+        "functionality": "Authenticates a user and provides access and refresh JSON Web Tokens.",
+        "route": "/users/token/",
+        "method": "POST",
+        "permissions": "Any",
+        "input": {
+          "description": "User's login credentials.",
+          "example": {
+            "username": "newuser",
+            "password": "a-strong-password"
+          }
+        },
+        "output": {
+          "success_code": "200 OK",
+          "description": "A pair of JWTs for authenticated sessions.",
+          "example": {
+            "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        }
+      },
+      {
+        "endpoint_name": "Logout (Blacklist Token)",
+        "functionality": "Blacklists a refresh token to effectively log a user out.",
+        "route": "/users/logout/",
+        "method": "POST",
+        "permissions": "Authenticated User",
+        "input": {
+          "description": "The refresh token to be blacklisted.",
+          "example": {
+            "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "output": {
+          "success_code": "205 Reset Content",
+          "description": "An empty response indicating success.",
+          "example": {}
+        }
+      },
+      {
+        "endpoint_name": "Get & Update User Profile",
+        "functionality": "Retrieves or updates the profile of the currently authenticated user.",
+        "route": "/users/me/",
+        "method": "GET, PUT, PATCH",
+        "permissions": "Authenticated User",
+        "input": {
+          "description": "(For PUT/PATCH) Fields to update. `profile_image_id` links an existing `File` object.",
+          "example": {
+            "first_name": "Updated",
+            "email": "updated@example.com",
+            "profile_image_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+          }
+        },
+        "output": {
+          "success_code": "200 OK",
+          "description": "The user's full profile details.",
+          "example": {
+            "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            "username": "newuser",
+            "email": "updated@example.com",
+            "first_name": "Updated",
+            "last_name": "User",
+            "profile_image": {
+              "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+              "name": "profile.jpg",
+              "file": "/media/uploads/profile.jpg"
+            }
+          }
+        }
+      },
+      {
+        "endpoint_name": "List User Notifications",
+        "functionality": "Retrieves a list of all notifications for the authenticated user.",
+        "route": "/users/me/notifications/",
+        "method": "GET",
+        "permissions": "Authenticated User",
+        "input": {
+          "description": "None. Optional query parameters like `?is_read=false` can be added.",
+          "example": null
+        },
+        "output": {
+          "success_code": "200 OK",
+          "description": "A list of notification objects.",
+          "example": [
+            {
+              "id": "c4a4a1a4-a4a4-4a4a-a4a4-a4a4a4a4a4a4",
+              "content": "You were assigned to task 'Design Homepage'.",
+              "is_read": false,
+              "create_date": "2025-10-26T11:00:00Z"
+            }
+          ]
+        }
+      },
+      {
+        "endpoint_name": "Mark All Notifications as Read",
+        "functionality": "Marks all unread notifications for the user as read in one batch.",
+        "route": "/users/me/notifications/mark-all-as-read/",
+        "method": "POST",
+        "permissions": "Authenticated User",
+        "input": {
+          "description": "An empty request body.",
+          "example": {}
+        },
+        "output": {
+          "success_code": "204 No Content",
+          "description": "An empty response indicating success.",
+          "example": {}
+        }
+      }
+    ],
+    "projects": [
+      {
+        "endpoint_name": "Create Project",
+        "functionality": "Creates a new project, setting the requester as the owner and initializing a chat room.",
+        "route": "/projects/",
+        "method": "POST",
+        "permissions": "Authenticated User",
+        "input": {
+          "description": "Core details for the new project.",
+          "example": {
+            "title": "New Website Redesign",
+            "description": "A complete overhaul of the company's main website.",
+            "finish_date": "2026-03-31T23:59:59Z"
+          }
+        },
+        "output": {
+          "success_code": "201 Created",
+          "description": "The full details of the newly created project.",
+          "example": {
+            "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+            "title": "New Website Redesign",
+            "description": "A complete overhaul...",
+            "owner": { "id": "f47ac10b...", "username": "newuser" },
+            "supervisors": [], "members": [], "phases": [], "chat": "c1d2e3f4...",
+            "finish_date": "2026-03-31T23:59:59Z"
+          }
+        }
+      },
+      {
+        "endpoint_name": "List My Projects",
+        "functionality": "Lists all projects where the authenticated user is an owner, supervisor, or member.",
+        "route": "/projects/",
+        "method": "GET",
+        "permissions": "Authenticated User",
+        "input": { "description": "None.", "example": null },
+        "output": {
+          "success_code": "200 OK",
+          "description": "A list of project summaries.",
+          "example": [ { "id": "a1b2c3d4...", "title": "New Website Redesign", "owner": { "username": "newuser" } } ]
+        }
+      },
+      {
+        "endpoint_name": "Update Project Members",
+        "functionality": "Adds or removes users from a project's member list.",
+        "route": "/projects/{project_id}/members/",
+        "method": "POST, DELETE",
+        "permissions": "Project Owner or Supervisor",
+        "input": {
+          "description": "A list of user UUIDs to add (POST) or remove (DELETE).",
+          "example": { "user_ids": ["f47ac10b-58cc-4372-a567-0e02b2c3d479"] }
+        },
+        "output": {
+          "success_code": "200 OK",
+          "description": "A status confirmation.",
+          "example": { "status": "Members updated successfully." }
+        }
+      },
+      {
+        "endpoint_name": "Create Project Phase",
+        "functionality": "Adds a new phase (e.g., 'Planning', 'Development') to a specific project.",
+        "route": "/projects/{project_id}/phases/",
+        "method": "POST",
+        "permissions": "Project Owner or Supervisor",
+        "input": {
+          "description": "Details for the new phase.",
+          "example": {
+            "title": "Phase 1: Research",
+            "status": "Pending",
+            "picked_color": "#3498DB",
+            "begin_date": "2025-11-01T09:00:00Z",
+            "end_date": "2025-11-15T17:00:00Z"
+          }
+        },
+        "output": {
+          "success_code": "201 Created",
+          "description": "The newly created phase object.",
+          "example": { "id": "b2c3d4e5...", "title": "Phase 1: Research", "status": "Pending" }
+        }
+      }
+    ],
+    "tasks": [
+      {
+        "endpoint_name": "Create Task",
+        "functionality": "Creates a new task within a specific project phase.",
+        "route": "/phases/{phase_id}/tasks/",
+        "method": "POST",
+        "permissions": "Project Owner or Supervisor",
+        "input": {
+          "description": "Details for the new task. Leader must be a project member.",
+          "example": {
+            "title": "Develop User Authentication API",
+            "description": "Create endpoints for user registration and login.",
+            "priority": 1,
+            "leader": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            "due_date": "2025-11-10T17:00:00Z"
+          }
+        },
+        "output": {
+          "success_code": "201 Created",
+          "description": "The full details of the newly created task.",
+          "example": { "id": "d3e4f5a6...", "title": "Develop User Authentication API", "status": "Pending", "priority": 1 }
+        }
+      },
+      {
+        "endpoint_name": "Get Task Details",
+        "functionality": "Retrieves the full details of a single task, including subtasks, comments, and members.",
+        "route": "/tasks/{task_id}/",
+        "method": "GET",
+        "permissions": "Project Member",
+        "input": { "description": "None.", "example": null },
+        "output": {
+          "success_code": "200 OK",
+          "description": "A detailed task object.",
+          "example": {
+            "id": "d3e4f5a6...",
+            "title": "Develop User Authentication API",
+            "status": "Pending",
+            "leader": { "username": "newuser" },
+            "members": [], "comments": [], "subtasks": []
+          }
+        }
+      },
+      {
+        "endpoint_name": "Create Comment on Task",
+        "functionality": "Adds a comment to a specific task. The author is the authenticated user.",
+        "route": "/tasks/{task_id}/comments/",
+        "method": "POST",
+        "permissions": "Project Member",
+        "input": {
+          "description": "The text content of the comment.",
+          "example": { "content": "I've started working on this. The database schema is ready." }
+        },
+        "output": {
+          "success_code": "201 Created",
+          "description": "The newly created comment object.",
+          "example": {
+            "id": "e4f5a6b7...",
+            "author": { "username": "newuser" },
+            "create_date": "2025-10-27T10:00:00Z",
+            "content": "I've started working on this. The database schema is ready."
+          }
+        }
+      }
+    ],
+    "chat": [
+      {
+        "endpoint_name": "Real-time Chat Connection",
+        "functionality": "Establishes a persistent WebSocket connection to a project's chat room for real-time communication.",
+        "route": "ws://<your_domain>:<port>/ws/chat/{chat_id}/",
+        "method": "WEBSOCKET",
+        "permissions": "Project Member",
+        "input": {
+          "description": "After connection, the client sends JSON messages (events) to the server.",
+          "events": [
+            {
+              "event_name": "chat_message",
+              "description": "Sends a text message with optional file attachments. Files must be uploaded via a separate REST endpoint first to get their IDs.",
+              "example": {
+                "type": "chat_message",
+                "message": "Hey team, check out the new mockups.",
+                "attached_files": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"]
+              }
+            },
+            {
+              "event_name": "user_typing",
+              "description": "Notifies the server that the user's typing status has changed.",
+              "example": {
+                "type": "user_typing",
+                "is_typing": true
+              }
+            }
+          ]
+        },
+        "output": {
+          "success_code": "101 Switching Protocols",
+          "description": "The server broadcasts JSON messages (events) to all connected clients in the room.",
+          "events": [
+            {
+              "event_name": "chat_message",
+              "description": "Broadcasts a new message to all clients, including the sender.",
+              "example": {
+                "type": "chat_message",
+                "message": {
+                  "id": "c1d2e3f4...",
+                  "sender": { "username": "jane_doe" },
+                  "send_date": "2025-10-27T10:00:00Z",
+                  "content": "Hey team, check out the new mockups.",
+                  "attached": [{ "id": "a1b2c3d4...", "name": "mockup.png" }]
+                }
+              }
+            },
+            {
+              "event_name": "user_typing",
+              "description": "Notifies clients that another user has started or stopped typing.",
+              "example": {
+                "type": "user_typing",
+                "user": { "username": "john_doe" },
+                "is_typing": true
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
